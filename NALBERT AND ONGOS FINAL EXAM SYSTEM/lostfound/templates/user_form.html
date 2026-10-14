@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit account' if target else 'Create an account' }}{% endblock %}
+{% block content %}
+<header class="page-head"><h1>{{ 'Edit account' if target else 'Create an account' }}</h1></header>
+<form method="post" class="form" novalidate>
+  <label>Full name<input name="full_name" value="{{ form.get('full_name','') }}" required></label>
+  <label>Username<input name="username" value="{{ form.get('username','') }}" autocomplete="off" required></label>
+  <label>Role
+    <select name="role" id="role-select" {{ 'disabled' if target and target.id == current_user.id }}>
+      {% for v, l in [('admin','Administrator'),('staff','Lost & Found Officer'),('student','Student')] %}
+      <option value="{{ v }}" {{ 'selected' if form.get('role') == v }}>{{ l }}</option>{% endfor %}
+    </select>
+    {% if target and target.id == current_user.id %}<input type="hidden" name="role" value="{{ target.role }}">{% endif %}
+  </label>
+  <label id="program-field" hidden>Program / College
+    <select name="program">
+      <option value="">Select a program</option>
+      {% for program in college_programs %}
+      <option value="{{ program }}" {{ 'selected' if form.get('program') == program }}>{{ program }}</option>
+      {% endfor %}
+    </select>
+  </label>
+  <label>{{ 'New password (leave blank to keep the current one)' if target else 'Password (6+ characters)' }}
+    <input name="password" type="password" autocomplete="new-password" {{ '' if target else 'required' }}></label>
+  <div class="row-actions"><button class="btn" type="submit">{{ 'Save changes' if target else 'Create account' }}</button><a class="btn ghost" href="{{ url_for('users') }}">Cancel</a></div>
+</form>
+<script>
+  const roleSelect = document.getElementById('role-select');
+  const programField = document.getElementById('program-field');
+  const programSelect = programField.querySelector('select');
+  function updateProgramField() {
+    const isStudent = roleSelect.value === 'student';
+    programField.hidden = !isStudent;
+    programSelect.required = isStudent;
+  }
+  roleSelect.addEventListener('change', updateProgramField);
+  updateProgramField();
+</script>
+{% endblock %}

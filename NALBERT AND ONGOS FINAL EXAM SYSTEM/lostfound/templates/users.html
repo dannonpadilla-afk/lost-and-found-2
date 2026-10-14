@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Accounts{% endblock %}
+{% block content %}
+<header class="page-head"><h1>Accounts</h1><p>{{ users|length }} accounts across three roles.</p></header>
+<div class="row-actions"><a class="btn" href="{{ url_for('user_add') }}">Create an account</a></div>
+<div class="table-wrap"><table>
+  <thead><tr><th>Name</th><th>Username</th><th>Role</th><th>Program</th><th>Status</th><th></th></tr></thead>
+  <tbody>{% for u in users %}
+  <tr><td><strong>{{ u.full_name }}</strong></td><td>{{ u.username }}</td>
+    <td><span class="role-chip small r-{{ u.role }}">{{ u.role_label }}</span></td>
+    <td>{{ u.program if u.role == 'student' and u.program else '-' }}</td>
+    <td><span class="status-chip {{ 'active' if u.is_active else 'inactive' }}">{{ 'Active' if u.is_active else 'Deactivated' }}</span></td>
+    <td class="actions">
+      <a class="btn small ghost" href="{{ url_for('user_edit', uid=u.id) }}">Edit</a>
+      {% if u.id != current_user.id %}
+      <form method="post" action="{{ url_for('user_toggle_status', uid=u.id) }}">
+        <button class="btn small {{ 'ghost' if u.is_active else 'primary' }}" type="submit">{{ 'Deactivate' if u.is_active else 'Activate' }}</button>
+      </form>
+      <form method="post" action="{{ url_for('user_delete', uid=u.id) }}" onsubmit="return confirm('Delete this account?')"><button class="btn small danger">Delete</button></form>
+      {% endif %}
+    </td></tr>{% endfor %}
+  </tbody></table></div>
+{% endblock %}

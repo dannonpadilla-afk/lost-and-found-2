@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Claim an item{% endblock %}
+{% block content %}
+<header class="page-head"><h1>Claim "{{ item.name }}"</h1><p>Found at {{ item.location }} on {{ item.when.strftime('%b %d, %Y') }}.</p></header>
+<form method="post" class="form" novalidate>
+  <label>Tell us something only the owner would know
+    <textarea name="proof" rows="4" maxlength="300" required>{{ proof }}</textarea>
+    <small class="muted">For example a mark, a sticker, or what's inside. An officer will check it.</small></label>
+  <div class="row-actions"><button class="btn" type="submit">Send claim</button><a class="btn ghost" href="{{ url_for('found_items') }}">Cancel</a></div>
+</form>
+{% endblock %}

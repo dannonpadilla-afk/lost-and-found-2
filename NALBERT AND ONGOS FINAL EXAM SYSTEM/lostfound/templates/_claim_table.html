@@ -1,0 +1,31 @@
+{% if rows %}
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Item</th>{% if show_student %}<th>Claimant</th>{% endif %}<th>What they said</th>{% if mode == 'staff' %}<th>Hidden detail on file</th>{% endif %}<th>Status</th><th></th></tr></thead>
+  <tbody>
+  {% for r in rows %}
+  <tr>
+    <td><strong>{{ r.item }}</strong><br><small class="muted">{{ r.claim.created.strftime('%b %d, %H:%M') }}</small></td>
+    {% if show_student %}<td>{{ r.student }}</td>{% endif %}
+    <td>{{ r.claim.proof }}</td>
+    {% if mode == 'staff' %}<td>{{ r.identifier or '—' }}</td>{% endif %}
+    <td><span class="badge {{ r.claim.status }}">{{ r.claim.status|capitalize }}</span></td>
+    <td class="actions">
+      {% if mode == 'staff' %}
+        {% if r.claim.is_open %}
+          <form method="post" action="{{ url_for('claim_action', claim_id=r.claim.id, action='approve') }}"><button class="btn small">Approve</button></form>
+          <form method="post" action="{{ url_for('claim_action', claim_id=r.claim.id, action='reject') }}"><button class="btn small ghost">Reject</button></form>
+        {% endif %}
+        {% if current_user.can('claims.delete') %}
+          <form method="post" action="{{ url_for('claim_action', claim_id=r.claim.id, action='delete') }}" onsubmit="return confirm('Delete this claim record?')"><button class="btn small danger">Delete</button></form>
+        {% endif %}
+      {% elif mode == 'student' and r.claim.is_open %}
+        <form method="post" action="{{ url_for('claim_cancel', claim_id=r.claim.id) }}"><button class="btn small ghost">Cancel claim</button></form>
+      {% endif %}
+    </td>
+  </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endif %}

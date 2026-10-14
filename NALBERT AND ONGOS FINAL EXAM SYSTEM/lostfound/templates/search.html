@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Search{% endblock %}
+{% block content %}
+<header class="page-head"><h1>Search</h1><p>Look up items by name, description or place.</p></header>
+<form method="get" class="searchbar">
+  <input name="q" value="{{ q }}" placeholder="Try &quot;keys&quot; or &quot;gym&quot;" aria-label="Search text">
+  <select name="category" aria-label="Category"><option value="">All categories</option>
+    {% for c in categories %}<option {{ 'selected' if c == category }}>{{ c }}</option>{% endfor %}</select>
+  <select name="kind" aria-label="Type"><option value="">Found and lost</option>
+    <option value="found" {{ 'selected' if kind == 'found' }}>Found items</option>
+    <option value="lost" {{ 'selected' if kind == 'lost' }}>Lost reports</option></select>
+  <button class="btn" type="submit">Search</button>
+</form>
+{% if searched %}
+  <p class="muted">{{ items|length }} result{{ '' if items|length == 1 else 's' }}</p>
+  {% include "_item_table.html" %}
+  {% if not items %}<p class="empty">Nothing matches. Check the spelling or clear a filter.</p>{% endif %}
+{% else %}
+  <p class="empty">Enter a search or pick a filter to see results.</p>
+{% endif %}
+{% endblock %}

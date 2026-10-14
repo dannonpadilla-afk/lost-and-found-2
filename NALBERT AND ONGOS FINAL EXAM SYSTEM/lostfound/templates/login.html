@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Sign in{% endblock %}
+{% block content %}
+<section class="login">
+  <div class="login-art">
+    <img class="login-feature-image" src="{{ url_for('static', filename='lost-and-found.jpg') }}" alt="Christ the King College de Maranding Lost and Found banner and campus building">
+  </div>
+  <div class="login-form">
+    <img class="login-school-logo" src="{{ url_for('static', filename='ckcm_logo-removebg-preview.png') }}" alt="King College de Maranding, Inc. seal">
+    <p class="login-school-name">CHRIST THE KING COLLEGE DE MARANDING</p>
+    <div class="login-heading">
+      <p class="login-kicker">YOUR CAMPUS, RECONNECTED</p>
+      <h2>Welcome back</h2>
+      <p>Sign in to continue to Claim Check.</p>
+    </div>
+    <form method="post" novalidate>
+      <label>Username<input name="username" autocomplete="username" autofocus required></label>
+      <label>Password<input name="password" type="password" autocomplete="current-password" required></label>
+      <button class="btn" type="submit">Sign in</button>
+    </form>
+    <p class="login-account-help">Don't have an account? Ask your campus administrator to create one.</p>
+  </div>
+</section>
+{% endblock %}

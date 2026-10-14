@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Found items{% endblock %}
+{% block content %}
+<header class="page-head"><h1>Found items</h1><p>Things handed in to the office. Spot yours? Send a claim.</p></header>
+{% if current_user.can('items.add') %}<div class="row-actions"><a class="btn" href="{{ url_for('found_add') }}">Log a found item</a></div>{% endif %}
+{% include "_item_table.html" %}
+{% if not items %}<p class="empty">No found items right now.</p>{% endif %}
+{% endblock %}

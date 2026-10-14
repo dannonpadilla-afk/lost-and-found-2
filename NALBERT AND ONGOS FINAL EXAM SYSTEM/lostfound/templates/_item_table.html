@@ -1,0 +1,34 @@
+{% if items %}
+{% set has_amounts = items|selectattr('amount')|list|length > 0 %}
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Item</th><th>Category</th>{% if has_amounts %}<th>Amount</th>{% endif %}<th>Where</th><th>Date</th><th>Type</th><th>Status</th><th></th></tr></thead>
+  <tbody>
+  {% for i in items %}
+  <tr>
+    <td>{% if i.photo_filename %}<img class="report-photo" src="{{ url_for('item_photo', item_id=i.id) }}" alt="Photo of {{ i.name }}">{% endif %}<strong>{{ i.name }}</strong><br><small class="muted">{{ i.description }}</small></td>
+    <td>{{ i.category }}</td>
+    {% if has_amounts %}<td class="num">{{ 'PHP %.2f'|format(i.amount) if i.amount is not none else '—' }}</td>{% endif %}
+    <td>{{ i.location }}</td>
+    <td class="num">{{ i.when.strftime('%b %d, %Y') }}</td>
+    <td>{{ i.kind_label }}</td>
+    <td><span class="badge s-{{ i.status|replace(' ', '-') }}">{{ i.status|capitalize }}</span></td>
+    <td class="actions">
+      {% if i.kind == 'found' and current_user.can('claims.submit') and i.is_active %}
+        {% if i.id in claim_ids %}<span class="muted">Claim sent</span>
+        {% else %}<a class="btn small" href="{{ url_for('claim_item', item_id=i.id) }}">This is mine</a>{% endif %}
+      {% endif %}
+      {% if i.kind == 'lost' and i.is_active and i.can_edit(current_user) %}
+        <form method="post" action="{{ url_for('lost_resolve', item_id=i.id) }}"><button class="btn small ghost">Mark as found</button></form>
+      {% endif %}
+      {% if i.can_edit(current_user) %}<a class="btn small ghost" href="{{ url_for('item_edit', item_id=i.id) }}">Edit</a>{% endif %}
+      {% if i.can_delete(current_user) %}
+        <form method="post" action="{{ url_for('item_delete', item_id=i.id) }}" onsubmit="return confirm('Delete this record?')"><button class="btn small danger">Delete</button></form>
+      {% endif %}
+    </td>
+  </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endif %}

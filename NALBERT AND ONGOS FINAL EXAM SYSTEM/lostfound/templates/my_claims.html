@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block title %}My claims{% endblock %}
+{% block content %}
+<header class="page-head"><h1>My claims</h1><p>Items you've said are yours, newest first.</p></header>
+{% with show_student=False, mode='student' %}{% include "_claim_table.html" %}{% endwith %}
+{% if not rows %}<p class="empty">No claims yet. <a href="{{ url_for('found_items') }}">Browse found items</a>.</p>{% endif %}
+{% endblock %}

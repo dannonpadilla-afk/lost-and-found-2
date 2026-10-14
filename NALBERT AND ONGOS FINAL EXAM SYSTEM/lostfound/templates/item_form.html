@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit record' if item else ('Log a found item' if kind == 'found' else 'Report a lost item') }}{% endblock %}
+{% block content %}
+<header class="page-head"><h1>{{ 'Edit record' if item else ('Log a found item' if kind == 'found' else 'Report a lost item') }}</h1></header>
+<div class="form-help" aria-live="polite">
+  <p><strong>Share the most helpful details.</strong> Include the item name, category, exact location, date, and any unique markings so CKCM staff can match found and lost items faster.</p>
+</div>
+<form method="post" class="form record-form" enctype="multipart/form-data" novalidate>
+  <label class="field-half">Item name or description<input name="name" value="{{ form.get('name','') }}" maxlength="80" required></label>
+  <label class="field-half">Select a category
+    <select name="category">{% for c in categories %}<option {{ 'selected' if form.get('category') == c }}>{{ c }}</option>{% endfor %}</select></label>
+  <label class="field-half" id="money-amount-field" hidden>Amount in PHP
+    <input name="amount" type="number" min="0.01" step="0.01" inputmode="decimal" value="{{ form.get('amount','') }}">
+    <small class="muted">Enter the amount of cash, up to two decimal places.</small></label>
+  <label class="field-wide">Description of the item<textarea name="description" rows="3" maxlength="300" required>{{ form.get('description','') }}</textarea>
+    <small class="muted">Include distinguishing details such as brand, color, size, damage, serial number, or any marks that help identify it.</small></label>
+  <label class="field-half">{{ 'Where it was found' if kind == 'found' else 'Where you last had it' }}<input name="location" value="{{ form.get('location','') }}" maxlength="80" required></label>
+  <label class="date-field field-half">
+    <span>{{ 'Date found' if kind == 'found' else 'Date lost' }}</span>
+    <input name="date" type="date" max="{{ today_iso }}" value="{{ form.get('date','') }}" required>
+    <small>{{ 'Choose the date it was handed in.' if kind == 'found' else 'Choose the date you last had the item.' }}</small>
+  </label>
+  <div class="photo-picker field-wide">
+    <input class="photo-input" id="photo-input" name="photo" type="file" accept="image/jpeg,image/png,image/webp">
+    <label class="photo-dropzone" id="photo-dropzone" for="photo-input">
+      <span class="photo-upload-mark" aria-hidden="true">+</span>
+      <span class="photo-dropzone-copy"><strong>Add a photo (optional)</strong><small>Choose a photo or drag it here</small></span>
+      <span class="photo-dropzone-limit">JPG, PNG, or WebP<br>Up to 5 MB</span>
+    </label>
+    <div class="photo-preview" id="photo-preview" aria-live="polite" hidden>
+      <img id="photo-preview-image" alt="Selected photo preview">
+      <span class="photo-preview-copy"><strong id="photo-filename"></strong><small>Ready to upload</small></span>
+      <button class="photo-remove" id="photo-remove" type="button">Remove</button>
+    </div>
+    {% if item and item.photo_filename %}
+    <div class="photo-current" id="photo-current">
+      <small>Current photo</small>
+      <img src="{{ url_for('item_photo', item_id=item.id) }}" alt="Current photo of {{ item.name }}">
+    </div>
+    {% endif %}
+  </div>
+  {% if kind == 'found' %}
+  <label class="field-wide">Hidden identifying detail
+    <input name="identifier" value="{{ form.get('identifier','') }}" maxlength="200" required>
+    <small class="muted">Only staff see this. Use it to check claims, e.g. a mark inside the item.</small></label>
+  {% endif %}
+  {% if item %}
+  <label class="field-half">Status
+    <select name="status">{% for s in item.statuses %}<option value="{{ s }}" {{ 'selected' if form.get('status') == s }}>{{ s|capitalize }}</option>{% endfor %}</select></label>
+  {% endif %}
+  <div class="row-actions form-actions"><button class="btn" type="submit">{{ 'Save changes' if item else ('Log item' if kind == 'found' else 'Send report') }}</button>
+    <a class="btn ghost" href="{{ url_for('found_items' if kind == 'found' else 'lost_reports') }}">Cancel</a></div>
+</form>
+<script>
+  const categorySelect = document.querySelector('select[name="category"]');
+  const amountField = document.getElementById('money-amount-field');
+  const amountInput = amountField.querySelector('input');
+  function updateMoneyAmountField() {
+    const isMoney = categorySelect.value === 'Money';
+    amountField.hidden = !isMoney;
+    amountInput.required = isMoney;
+  }
+  categorySelect.addEventListener('change', updateMoneyAmountField);
+  updateMoneyAmountField();
+
+  const photoInput = document.getElementById('photo-input');
+  if (photoInput) {
+    const photoDropzone = document.getElementById('photo-dropzone');
+    const photoPreview = document.getElementById('photo-preview');
+    const photoPreviewImage = document.getElementById('photo-preview-image');
+    const photoFilename = document.getElementById('photo-filename');
+    const photoRemove = document.getElementById('photo-remove');
+    const currentPhoto = document.getElementById('photo-current');
+    let previewUrl = null;
+
+    function showPhoto(file) {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+      previewUrl = URL.createObjectURL(file);
+      photoPreviewImage.src = previewUrl;
+      photoFilename.textContent = file.name;
+      photoPreview.hidden = false;
+      if (currentPhoto) currentPhoto.hidden = true;
+    }
+
+    function clearPhoto() {
+      photoInput.value = '';
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+      previewUrl = null;
+      photoPreviewImage.removeAttribute('src');
+      photoPreview.hidden = true;
+      if (currentPhoto) currentPhoto.hidden = false;
+    }
+
+    photoInput.addEventListener('change', () => {
+      if (photoInput.files[0]) showPhoto(photoInput.files[0]);
+    });
+    photoRemove.addEventListener('click', clearPhoto);
+    photoDropzone.addEventListener('dragover', event => {
+      event.preventDefault();
+      photoDropzone.classList.add('is-dragging');
+    });
+    photoDropzone.addEventListener('dragleave', () => photoDropzone.classList.remove('is-dragging'));
+    photoDropzone.addEventListener('drop', event => {
+      event.preventDefault();
+      photoDropzone.classList.remove('is-dragging');
+      const file = event.dataTransfer.files[0];
+      if (!file) return;
+      const transfer = new DataTransfer();
+      transfer.items.add(file);
+      photoInput.files = transfer.files;
+      showPhoto(file);
+    });
+  }
+</script>
+{% endblock %}

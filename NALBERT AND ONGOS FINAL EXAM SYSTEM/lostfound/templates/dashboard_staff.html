@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Officer dashboard{% endblock %}
+{% block content %}
+<header class="page-head"><h1>Officer dashboard</h1><p>Log what's handed in, check claims, and close the loop on lost reports.</p></header>
+<div class="stats">
+  <div class="{{ 'hot' if pending }}"><b>{{ pending|length }}</b><span>claims to review</span></div>
+  <div><b>{{ lost_count }}</b><span>open lost reports</span></div>
+  <div><b>{{ stored|length }}</b><span>recent items in storage</span></div>
+</div>
+<div class="row-actions">
+  <a class="btn" href="{{ url_for('found_add') }}">Log a found item</a>
+  <a class="btn ghost" href="{{ url_for('lost_reports') }}">Lost reports</a>
+  <a class="btn ghost" href="{{ url_for('search') }}">Search records</a>
+</div>
+<h2>Claims waiting for a check</h2>
+{% with rows=pending, show_student=True, mode='staff' %}{% include "_claim_table.html" %}{% endwith %}
+{% if not pending %}<p class="empty">Nothing to review. New claims appear here.</p>{% endif %}
+<h2>Recently logged</h2>
+{% with items=stored, claim_ids=[] %}{% include "_item_table.html" %}{% endwith %}
+{% endblock %}

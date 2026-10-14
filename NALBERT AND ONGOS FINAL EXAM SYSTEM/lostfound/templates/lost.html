@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Lost reports{% endblock %}
+{% block content %}
+<header class="page-head"><h1>{{ 'Lost reports' if current_user.can('items.view_all') else 'My lost reports' }}</h1><p>Reports of items that are missing.</p></header>
+{% if current_user.can('lost.report') %}<div class="row-actions"><a class="btn" href="{{ url_for('lost_add') }}">Report a lost item</a></div>{% endif %}
+{% include "_item_table.html" %}
+{% if not items %}<p class="empty">No lost reports yet.</p>{% endif %}
+{% endblock %}
